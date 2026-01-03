@@ -1,54 +1,85 @@
-# CDD Python Adapter
+# CDD Framework - Python Adapter
 
 > **Official Python adapter for the CDD (Cyberattack-Driven Development) framework.**
 > Effortlessly audit your application's security posture using our high-performance native Rust core.
 
+The Cloud Detection & Defense (CDD) Python adapter allows you to integrate automated security audits into your Python projects. 
+
+It wraps the high-performance **Ratel Core** (Rust) into a developer-friendly Python package.
+
 ## Installation
 
-You can now install the package directly from PyPI:
+Install the adapter via pip (ensure you have access to your private/public registry):
 
 ```bash
-# Official release
 pip install cdd-python
-
-# Or for local development (editable mode)
-pip install -e .
 ```
 
-## Integration Guide (e.g., FastAPI)
-Integrating CDD into your existing projects allows you to automate security feedback during the development phase.
+## How it Works
+This adapter follows the "Binary Pivot" architecture:
 
-1. Create an Audit Script
-In your project root (alongside your main.py), create a file named security_audit.py:
+Zero-Config Extraction: At runtime, the library detects your OS (Windows, Linux, macOS) and extracts the embedded ratel binary to ~/.ratel/bin/.
 
-```bash
-from cdd_python.engine import CDDEngine
+Pythonic Standards: It automatically detects Python project structures (presence of requirements.txt or pyproject.toml) to place security scenarios in tests/security/.
 
-def run_security_check():
-    # 1. Initialize the engine
-    engine = CDDEngine()
-    
-    # 2. Launch the attack on your local server
-    # Ensure your server (FastAPI, Flask, etc.) is currently running!
-    target_url = "http://localhost:8000"
-    
-    print(f"🛡️ CDD: Starting automated audit on {target_url}...")
-    engine.execute_audit(target_url)
+Process Isolation: The audit runs as a native subprocess, keeping your Python environment fast and clean.
+
+## Usage
+### 1. Initialization
+Run this once to bootstrap your project with an expert security scenario.
+
+```
+Python
+
+import cdd
+
+# Generates tests/security/security.ratel
+cdd.init() 
+```
+
+
+### 2. Configuration (Ratel DSL)
+The security logic is defined in the .ratel file. This allows you to update security rules without touching your Python code.
+
+File: tests/security/security.ratel
+
+```
+Code snippet
+
+SCENARIO "Python API Security Audit"
+TARGET "http://localhost:8000"
+
+WITH SCOPE KERNEL
+WITH SCOPE TERRITORY
+
+IGNORE "FAVICON_FINGERPRINT"
+```
+
+### 3. Execution
+Integrate the audit into your development workflow or CI/CD scripts.
+
+```Python
+
+import cdd
 
 if __name__ == "__main__":
-    run_security_check()
+    print("Starting Security Audit...")
+    
+    # Executes the embedded Ratel binary using the .ratel file
+    cdd.run()
+
 ```
 
-2. Run the Audit
-Start your application in one terminal, then execute the audit script in another:
+## Integration with Pytest
+You can easily wrap the audit in a pytest suite:
 
-```bash
-python security_audit.py
+
+```Python
+
+def test_security_compliance():
+    import cdd
+    # CDD will raise a CalledProcessError if the audit fails
+    cdd.run()
 ```
-
-## Under the Hood
-Native Rust Core: The package bundles pre-compiled binaries for Windows, Linux, and macOS (alpha.2).
-
-Security Checks: Detects missing headers (HSTS), information leaks (X-Powered-By), and permissive CORS policies.
 
 Part of the CDD-Framework organization.

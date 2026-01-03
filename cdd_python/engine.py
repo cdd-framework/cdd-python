@@ -1,34 +1,61 @@
 import subprocess
+import os
 import platform
+import shutil
 from pathlib import Path
 
 
 class CDDEngine:
     def __init__(self):
-        self.bin_path = Path(__file__).parent / "bin"
+        self.home_ratel = Path.home() / ".ratel"
+        self.bin_dir = self.home_ratel / "bin"
+        self.bin_dir.mkdir(parents=True, exist_ok=True)
 
-    def execute_audit(self, target_url: str):
-        system = platform.system().lower()
-        if system == "windows":
-            binary = "cdd-core-win.exe"
-        elif system == "darwin":
-            binary = "cdd-core-macos"
+        # Identification of the platform and selection of the source binary
+        system = platform.system()
+        if system == "Windows":
+            self.source_name = "ratel-windows-x64.exe"
+            self.target_name = "ratel.exe"
+        elif system == "Darwin":  # macOS
+            self.source_name = "ratel-macos-x64"
+            self.target_name = "ratel"
+        else:  # Linux and others
+            self.source_name = "ratel-linux-x64"
+            self.target_name = "ratel"
+
+        self.binary_path = self.bin_dir / self.target_name
+        self._extract_binary()
+
+    def _extract_binary(self):
+        # localization of the binary inside the python package
+        source_bin = Path(__file__).parent / "bin" / self.source_name
+
+        if source_bin.exists():
+            # Extraction/Update in ~/.ratel/bin/
+            shutil.copy(source_bin, self.binary_path)
+
+            # Apply execution rights for Unix
+            if platform.system() != "Windows":
+                os.chmod(self.binary_path, 0o755)
         else:
-            binary = "cdd-core-linux"
+            print(f" Warning: Source binary {self.source_name} not found in package.")
 
-        binary_path = self.bin_path / binary
+    def init_project(self):
+        # Calls 'ratel init' to create the tests/security/ directory structure
+        print(f"🐾 Initializing Ratel workspace...")
+        subprocess.run([str(self.binary_path), "init"], check=True)
 
-        print(f"🛡️ Launching CDD Python Attack on: {target_url}")
+    def execute_audit(self, target_url=None):
+        # Standard path defined in Ratel's main.rs for Python
+        scenario = "tests/ratel/security.ratel"
+
+        print(f"🛡️ CDD Engine synchronized: {self.target_name}")
         try:
-            subprocess.run(
-                [str(binary_path), target_url],
-                capture_output=False,  # Pour voir le tableau en direct
-                text=True,
+            # Execution of the extracted binary with the local scenario
+            subprocess.run([str(self.binary_path), "run", scenario], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Audit failed with exit code: {e.returncode}")
+        except FileNotFoundError:
+            print(
+                f"Error: Scenario file not found at {scenario}. Did you run cdd.init()?"
             )
-        except Exception as e:
-            print(f"Execution failed: {e}")
-
-
-if __name__ == "__main__":
-    engine = CDDEngine()
-    engine.execute_audit("http://localhost:8000")
