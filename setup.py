@@ -8,7 +8,7 @@ package_data = {
 
 setup(
     name="cdd-python",
-    version="0.5.0a4",
+    version="0.5.0a5",
     author="Fabio Meyer<github.com/jemmyx>",
     description="Python adapter for the CDD Security Framework (Ratel Core)",
     long_description=open("README.md").read(),

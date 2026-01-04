@@ -1,2 +1,1 @@
-recursive-include cdd/bin *
-include README.md
+    recursive-include cdd_python/bin *
