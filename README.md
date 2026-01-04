@@ -1,4 +1,4 @@
-# CDD Framework - Python Adapter (0.5.0a3)
+# CDD Framework - Python Adapter (0.5.0a4)
 
 > **Official Python adapter for the CDD (Cyberattack-Driven Development) framework.**
 > Effortlessly audit your application's security posture using our high-performance native Rust core.
