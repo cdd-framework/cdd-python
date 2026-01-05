@@ -1,4 +1,4 @@
-# CDD Framework - Python Adapter (0.5.0a6)
+# CDD Framework - Python Adapter (0.6.0a0)
 
 > **Official Python adapter for the CDD (Cyberattack-Driven Development) framework.**
 > Effortlessly audit your application's security posture using our high-performance native Rust core.
@@ -81,5 +81,17 @@ def test_security_compliance():
     # CDD will raise a CalledProcessError if the audit fails
     cdd.run()
 ```
+
+
+## Update the package
+
+Update the setup.py
+
+```
+rm -rf dist/ build/ *.egg-info
+python -m build
+python -m twine upload dist/*
+```
+
 
 Part of the CDD-Framework organization.
